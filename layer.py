@@ -14,7 +14,7 @@ def _shapes_equal(tensor1: np.ndarray, tensor2: np.ndarray) -> bool:
 
 def _update_parameters_for_layer(layer, parameters: dict[str, np.ndarray]) -> None:
     """Checks parameters and updates."""
-    for k in layer._parameters:
+    for k in layer._parameters.keys():
         if k not in parameters:
             raise ValueError(
                 f'Parameter of network {k} not in {parameters.keys()}'
