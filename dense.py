@@ -89,7 +89,6 @@ class Dense(layer.Layer):
         # Shape: [b, out_dim].
         backwards_gradient = backwards_gradient.reshape(b, self.out_dim)
 
-        # Here we make sure to normalize by the batch dim.
         # Shape: [in_dim, out_dim].
         dy_dW = x.T @ backwards_gradient
         gradients[f'{self.name}/W'] = dy_dW

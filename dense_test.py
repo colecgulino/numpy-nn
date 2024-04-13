@@ -65,11 +65,12 @@ class TestDense(unittest.TestCase):
         backward_grad = dense2.backward(dense(x), {}, backward_grad, gradients)
         backward_grad = dense.backward(x, {}, backward_grad, gradients)
 
-        for grad_name, grad_value in reference_gradients.items():
-            np_test.assert_allclose(
-                grad_value.detach().numpy(), gradients[grad_name],
-                atol=1e-5, rtol=1e-5
-            )
+        with self.subTest('BackwardSame'):
+            for grad_name, grad_value in reference_gradients.items():
+                np_test.assert_allclose(
+                    grad_value.detach().numpy(), gradients[grad_name],
+                    atol=1e-5, rtol=1e-5
+                )
 
 
 if __name__ == '__main__':
