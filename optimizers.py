@@ -1,5 +1,6 @@
 """Optimizer implementation."""
 
+import abc
 import dataclasses
 import typing
 
@@ -70,3 +71,189 @@ def loss_and_grads(
             input, cache, backwards_gradient, gradients
         )
     return BackwardPassOutput(loss=loss, gradients=gradients, output=output)
+
+
+class Optimizer(abc.ABC):
+    """Base optimizer class."""
+
+    def __init__(
+            self,
+            parameters: Parameters,
+            loss: loss_base.Loss,
+            name='Optimizer'
+    ) -> None:
+        self.name = name
+        self.parameters = parameters
+        self.loss = loss
+
+    @abc.abstractmethod
+    def step(
+            self,
+            x: np.ndarray,
+            y: np.ndarray,
+            layers: list[layer.Layer],
+            layers_kwargs: list[dict[str, typing.Any]] | None = None
+    ) -> BackwardPassOutput:
+        """Step the optimizer one step.
+        
+        Args:
+            x: Input to the layers of shape [..., in_dim].
+            y: Target of the loss function of shape [..., out_dim].
+            layers: Layers that make up the computation to optimize.
+            layers_kwargs: Optional list of keyword arguments for each layer.
+
+        Returns:
+            An instance of `BackwardPassOutput`.
+        """
+
+
+class SGD(Optimizer):
+    def __init__(
+            self,
+            lr: float,
+            parameters: Parameters,
+            loss: loss_base.Loss,
+            name='SGD'
+    ) -> None:
+        super().__init__(parameters, loss, name)
+        self.lr = lr
+
+    def step(
+            self,
+            x: np.ndarray,
+            y: np.ndarray,
+            layers: list[layer.Layer],
+            layers_kwargs: list[dict[str, typing.Any]] | None = None
+    ) -> BackwardPassOutput:
+        """Steps the optimization one step.
+
+        Implements this update step:
+            theta = theta - lr * dtheta
+
+        Args:
+            x: Input to the layers of shape [..., in_dim].
+            y: Target of the loss function of shape [..., out_dim].
+            layers: Layers that make up the computation to optimize.
+            layers_kwargs: Optional list of keyword arguments for each layer.
+
+        Returns:
+            An instance of `BackwardPassOutput`.
+        """
+        # Run the backward pass of the network.
+        backward_output = loss_and_grads(x, y, self.loss, layers, layers_kwargs)
+        # Update the parameters.
+        for k in self.parameters:
+            self.parameters[k] = self.parameters[k] - self.lr * backward_output.gradients[k]
+        for layer in layers:
+            layer.update_parameters(self.parameters)
+        return backward_output
+
+
+class Momentum(Optimizer):
+    def __init__(
+            self,
+            lr: float,
+            parameters: Parameters,
+            loss: loss_base.Loss,
+            beta: float = 0.9,
+            name='SGD'
+    ) -> None:
+        super().__init__(parameters, loss, name)
+        self.lr = lr
+        self.beta = beta
+        self.momentum = {
+            k: np.zeros_like(v) for k, v in self.parameters.items()
+        }
+
+    def step(
+            self,
+            x: np.ndarray,
+            y: np.ndarray,
+            layers: list[layer.Layer],
+            layers_kwargs: list[dict[str, typing.Any]] | None = None
+    ) -> BackwardPassOutput:
+        """Steps the optimization one step.
+
+        Implements this update step:
+            theta = theta - lr * dtheta
+
+        Args:
+            x: Input to the layers of shape [..., in_dim].
+            y: Target of the loss function of shape [..., out_dim].
+            layers: Layers that make up the computation to optimize.
+            layers_kwargs: Optional list of keyword arguments for each layer.
+
+        Returns:
+            An instance of `BackwardPassOutput`.
+        """
+        # Run the backward pass of the network.
+        backward_output = loss_and_grads(x, y, self.loss, layers, layers_kwargs)
+        # Update the parameters.
+        for k in self.parameters:
+            self.momentum[k] = self.beta * self.momentum[k] + (1 - self.beta) * backward_output.gradients[k]
+            self.parameters[k] = self.parameters[k] - self.lr * self.momentum[k]
+        for layer in layers:
+            layer.update_parameters(self.parameters)
+        return backward_output
+
+
+class Adam(Optimizer):
+    def __init__(
+            self,
+            lr: float,
+            parameters: Parameters,
+            loss: loss_base.Loss,
+            beta1: float = 0.9,
+            beta2: float = 0.999,
+            eps: float = 1e-6,
+            name='SGD'
+    ) -> None:
+        super().__init__(parameters, loss, name)
+        self.lr = lr
+        self.beta1 = beta1
+        self.beta2 = beta2
+        self.eps = eps
+        self.m = {
+            k: np.zeros_like(v) for k, v in self.parameters.items()
+        }
+        self.v = {
+            k: np.zeros_like(v) for k, v in self.parameters.items()
+        }
+        self.t = 0
+
+    def step(
+            self,
+            x: np.ndarray,
+            y: np.ndarray,
+            layers: list[layer.Layer],
+            layers_kwargs: list[dict[str, typing.Any]] | None = None
+    ) -> BackwardPassOutput:
+        """Steps the optimization one step.
+
+        Implements this update step:
+            theta = theta - lr * dtheta
+
+        Args:
+            x: Input to the layers of shape [..., in_dim].
+            y: Target of the loss function of shape [..., out_dim].
+            layers: Layers that make up the computation to optimize.
+            layers_kwargs: Optional list of keyword arguments for each layer.
+
+        Returns:
+            An instance of `BackwardPassOutput`.
+        """
+        # Run the backward pass of the network.
+        backward_output = loss_and_grads(x, y, self.loss, layers, layers_kwargs)
+        gradients = backward_output.gradients
+        # Update the parameters.
+        for k in self.parameters:
+            self.m[k] = self.beta1 * self.m[k] + (1 - self.beta1) * gradients[k]
+            self.v[k] = self.beta2 * self.v[k] + (1 - self.beta2) * np.square(gradients[k])
+            m_hat = self.m[k] / (1 - self.beta1**(self.t + 1))
+            v_hat = self.v[k] / (1 - self.beta2**(self.t + 1))
+            update = m_hat / (np.sqrt(v_hat) + self.eps)
+            self.parameters[k] = self.parameters[k] - self.lr * update
+        for layer in layers:
+            layer.update_parameters(self.parameters)
+        self.t += 1
+        return backward_output
