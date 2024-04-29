@@ -8,16 +8,17 @@ import torch
 from torch import nn
 
 import convolution
-import loss_base
 import losses
 import optimizers
 
 
 class Conv1DTest(unittest.TestCase):
-    
+    """Test 1D convolution."""
+
     def test_forward(self):
-        B, T = 2, 6
-        x = np.random.random(size=(B, T, 10))
+        """Test forward pass."""
+        b, t = 2, 6
+        x = np.random.random(size=(b, t, 10))
         conv1d_1 = nn.Conv1d(in_channels=10, out_channels=20, kernel_size=3, padding=1)
         conv1d_2 = nn.Conv1d(in_channels=20, out_channels=5, kernel_size=3, padding=1)
 
@@ -39,15 +40,16 @@ class Conv1DTest(unittest.TestCase):
         np_test.assert_allclose(out1.detach().numpy(), out2, atol=1e-6, rtol=1e-6)
 
     def test_backward(self):
-        B, T = 2, 6
-        x = np.random.random(size=(B, T, 10))
+        """Test backward pass."""
+        b, t = 2, 6
+        x = np.random.random(size=(b, t, 10))
         conv1d_1 = nn.Conv1d(in_channels=10, out_channels=20, kernel_size=3, padding=1)
         conv1d_2 = nn.Conv1d(in_channels=20, out_channels=5, kernel_size=3, padding=1)
         x_torch = torch.from_numpy(x).permute([0, 2, 1]).float()
         out1 = conv1d_2(conv1d_1(x_torch))
         out1 = out1.permute([0, 2, 1])
 
-        y = np.array([0., 0, 1., 0., 0.])[None, None].repeat(B, axis=0).repeat(T, axis=1)
+        y = np.array([0., 0, 1., 0., 0.])[None, None].repeat(b, axis=0).repeat(t, axis=1)
         loss = nn.CrossEntropyLoss(reduction='sum')(
             out1.reshape([-1, out1.shape[-1]]),
             torch.from_numpy(y.copy()).reshape([-1, out1.shape[-1]])
@@ -85,8 +87,10 @@ class Conv1DTest(unittest.TestCase):
 
 
 class Conv2DTest(unittest.TestCase):
-    
+    """Test for 2d convolutional network."""
+
     def test_forward(self):
+        """Tests forward pass."""
         other_conv = nn.Conv2d(
             in_channels=10,
             out_channels=20,
@@ -100,16 +104,16 @@ class Conv2DTest(unittest.TestCase):
             padding=0
         )
 
-        B, H, W, C = 2, 5, 5, 10
-        image = np.random.random(size=(B, H, W, C))
+        b, h, w, c = 2, 5, 5, 10
+        image = np.random.random(size=(b, h, w, c))
         pytorch_image = torch.from_numpy(image).permute([0, 3, 1, 2]).float()
         out1 = other_conv2(other_conv(pytorch_image)).permute([0, 2, 3, 1])
-        myconv = convolution.Conv2d(10, 20, 3, padding=0)
+        myconv = convolution.Conv2D(10, 20, 3, padding=0)
         myconv.update_parameters({
             'Conv2D/W': other_conv.weight.permute([2, 3, 1, 0]).detach().numpy(),
             'Conv2D/b': other_conv.bias.detach().numpy(),
         })
-        myconv2 = convolution.Conv2d(20, 5, 3, padding=0, name='Conv2D1')
+        myconv2 = convolution.Conv2D(20, 5, 3, padding=0, name='Conv2D1')
         myconv2.update_parameters({
             'Conv2D1/W': other_conv2.weight.permute([2, 3, 1, 0]).detach().numpy(),
             'Conv2D1/b': other_conv2.bias.detach().numpy(),
@@ -119,6 +123,7 @@ class Conv2DTest(unittest.TestCase):
         np_test.assert_allclose(out1.detach().numpy(), out2, atol=1e-6, rtol=1e-6)
 
     def test_backward(self):
+        """Test backward pass."""
         other_conv = nn.Conv2d(
             in_channels=10,
             out_channels=20,
@@ -132,12 +137,11 @@ class Conv2DTest(unittest.TestCase):
             padding=0
         )
 
-        B, H, W, C = 2, 5, 5, 10
-        image = np.random.random(size=(B, H, W, C))
+        image = np.random.random(size=(2, 5, 5, 10))
         pytorch_image = torch.from_numpy(image).permute([0, 3, 1, 2]).float()
         out1 = other_conv2(other_conv(pytorch_image)).permute([0, 2, 3, 1])
         y = np.array([0., 0, 1., 0., 0.])[None, None, None].repeat(
-            B, axis=0).repeat(out1.shape[1], axis=1).repeat(out1.shape[2], axis=2)
+            2, axis=0).repeat(out1.shape[1], axis=1).repeat(out1.shape[2], axis=2)
         loss = nn.CrossEntropyLoss(reduction='sum')(
             out1.reshape([-1, out1.shape[-1]]),
             torch.from_numpy(y.copy()).reshape([-1, out1.shape[-1]])
@@ -150,12 +154,12 @@ class Conv2DTest(unittest.TestCase):
             'Conv2D1/b': other_conv2.bias.grad.detach().numpy(),
         }
 
-        myconv = convolution.Conv2d(10, 20, 3, padding=0)
+        myconv = convolution.Conv2D(10, 20, 3, padding=0)
         myconv.update_parameters({
             'Conv2D/W': other_conv.weight.permute([2, 3, 1, 0]).detach().numpy(),
             'Conv2D/b': other_conv.bias.detach().numpy(),
         })
-        myconv2 = convolution.Conv2d(20, 5, 3, padding=0, name='Conv2D1')
+        myconv2 = convolution.Conv2D(20, 5, 3, padding=0, name='Conv2D1')
         myconv2.update_parameters({
             'Conv2D1/W': other_conv2.weight.permute([2, 3, 1, 0]).detach().numpy(),
             'Conv2D1/b': other_conv2.bias.detach().numpy(),

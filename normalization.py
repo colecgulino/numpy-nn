@@ -16,7 +16,7 @@ class LayerNorm(layer.Layer):
         self.eps = eps
         self.set_parameter('scale', np.ones((self.size)))
         self.set_parameter('shift', np.zeros((self.size)))
-    
+
     def forward(self, x: np.ndarray) -> tuple[np.ndarray, layer.Cache]:
         """Forward propogation for LayerNorm.
         Implements:
@@ -28,8 +28,8 @@ class LayerNorm(layer.Layer):
         Return:
             Normalized output of shape [..., size].
         """
-        C = x.shape[-1]
-        assert C == self.size
+        c = x.shape[-1]
+        assert c == self.size
         # Compute the mean and variance along the last dimension
         mean = x.mean(axis=-1, keepdims=True)
         var = ((x - mean) ** 2).mean(axis=-1, keepdims=True)
@@ -42,7 +42,7 @@ class LayerNorm(layer.Layer):
         beta = self.get_parameter('shift')
         out = gamma * x_norm + beta
         return out, {}
-    
+
     def backward(
             self,
             x: np.ndarray,
@@ -94,14 +94,14 @@ class LayerNorm(layer.Layer):
         gradients[f'{self.name}/scale'] = dy_dscale
 
         # Backwards gradient.
-        N = self.size
+        n = self.size
         gamma = self.get_parameter('scale')
         sigma = np.sqrt(var + self.eps)
-        dmu = 1. / N
+        dmu = 1. / n
         # Shape: [..., N].
-        dsigma = (x - mean) / (N * sigma)
+        dsigma = (x - mean) / (n * sigma)
         # Shape: [..., N, N].
-        eye = np.eye(N)[None].repeat(b, axis=0)
+        eye = np.eye(n)[None].repeat(b, axis=0)
         jacobian = (1. / sigma[..., None]) * (eye - dmu)
         temp = ((x - mean) / sigma**2)[..., None] @ dsigma[..., None, :]
         jacobian -= temp

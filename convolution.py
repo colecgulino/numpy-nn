@@ -10,9 +10,9 @@ import layer
 
 def pad_image(image: np.ndarray, padding: int, padding_value: float = 0.) -> np.ndarray:
     """Pads an image equally on all sides."""
-    B, H, W, C = image.shape
-    row_padding = np.ones(shape=(B, padding, W, C)) * padding_value
-    column_padding = np.ones(shape=(B, H + 2 * padding, padding, C)) * padding_value
+    batch, height, width, channels = image.shape
+    row_padding = np.ones(shape=(batch, padding, width, channels)) * padding_value
+    column_padding = np.ones(shape=(batch, height + 2 * padding, padding, channels)) * padding_value
     image = np.concatenate((row_padding, image, row_padding), axis=1)
     image = np.concatenate((column_padding, image, column_padding), axis=2)
     return image
@@ -29,40 +29,41 @@ def convolve_2d(image: np.ndarray, kernel: np.ndarray) -> np.ndarray:
         Output of the 2d convolution filter of shape
             [B, new_H, new_W, in_channels, out_channels].
     """
-    K = kernel.shape[2]
-    hs = range(image.shape[1] - K + 1)
-    ws = range(image.shape[2] - K + 1)
+    k = kernel.shape[2]
+    hs = range(image.shape[1] - k + 1)
+    ws = range(image.shape[2] - k + 1)
     chunks = []
     for h, w in itertools.product(hs, ws):
-        chunks.append(image[:, h:h + K, w:w + K])
+        chunks.append(image[:, h:h + k, w:w + k])
     image = np.stack(chunks, axis=1)
     return image * kernel
 
 
 def pad_input_sequence(seq: np.ndarray, padding: int, value: float = 0.) -> np.ndarray:
     """Pad input sequence."""
-    B, T, C = seq.shape
+    batch, _, channels = seq.shape
     # Shape: [B, padding, C].
-    pad = np.ones((B, padding, C), dtype=seq.dtype) * value
+    pad = np.ones((batch, padding, channels), dtype=seq.dtype) * value
     # Shape: [B, T + 2 * padding, C].
     return np.concatenate((pad, seq, pad), axis=1)
 
 
 def convolve_1d(seq: np.ndarray, kernel: np.ndarray, kernel_dim: int) -> np.ndarray:
     """Functional for the convolution operator."""
-    B, T = seq.shape[:2]
-    K = kernel.shape[kernel_dim]
+    time = seq.shape[1]
+    k = kernel.shape[kernel_dim]
     # Shape: [B, num_chunks, K, in_channels].
     chunks = []
-    for chunk_start in range(0, T - K + 1, 1):
-        chunks.append(seq[:, chunk_start:chunk_start + K])
+    for chunk_start in range(0, time - k + 1, 1):
+        chunks.append(seq[:, chunk_start:chunk_start + k])
     seq = np.stack(chunks, axis=1)
     # Shape: [B, num_chunks, K, in_channels, out_channels].
     output = seq * kernel
     return output
 
 
-class Conv2d(layer.Layer):
+class Conv2D(layer.Layer):
+    """2D Convolutional network."""
 
     def __init__(
             self,
@@ -89,7 +90,7 @@ class Conv2d(layer.Layer):
             )
         )
         self.set_parameter('b', np.zeros([self.out_channels]))
-    
+
     def forward(self, x: np.ndarray) -> tuple[np.ndarray, layer.Cache]:
         """Forward propogation of the network"""
         b, h, w = x.shape[:3]
@@ -108,7 +109,7 @@ class Conv2d(layer.Layer):
         backwards_gradient: np.ndarray,
         gradients: dict[str, np.ndarray]
     ) -> np.ndarray:
-        """Backwards method of the layer.
+        """Backwards pass of convolution 1d.
         
         Args:
             x: Input to the layer.
@@ -122,7 +123,6 @@ class Conv2d(layer.Layer):
             Gradients of this layer representing dout / din of the same shape
                 as the input to be sent back to the next downstream layer.
         """
-        """Backward pass for a 1D convolutional network."""
         del cache
         image = pad_image(x, self.padding, self.padding_value)
 
@@ -147,6 +147,7 @@ class Conv2d(layer.Layer):
 
 
 class Conv1D(layer.Layer):
+    """Convolutional 1D layer."""
 
     def __init__(
             self,
@@ -207,10 +208,10 @@ class Conv1D(layer.Layer):
 
         # Calculate the weights as a convolution of the error signal over the
         # input.
-        dW = convolve_1d(x[..., None], np.expand_dims(
+        dw = convolve_1d(x[..., None], np.expand_dims(
             backwards_gradient, axis=[1, -2]), kernel_dim=2
         )
-        gradients[f'{self.name}/W'] = dW.sum(0).sum(1)
+        gradients[f'{self.name}/W'] = dw.sum(0).sum(1)
 
         din = np.zeros_like(x)
         padding_needed = (self.kernel_size + 1) // 2 - self.padding

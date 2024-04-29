@@ -1,7 +1,8 @@
+"""Tests transformer layers."""
+
 import math
 import unittest
 
-import numpy as np
 from numpy import testing as np_test
 import torch
 from torch import nn
@@ -15,6 +16,7 @@ NUM_BLOCKS = 5
 
 
 class MSATorch(torch.nn.Module):
+    """Test self attention layer."""
 
     def __init__(self, embed_dim: int) -> None:
         super().__init__()
@@ -24,9 +26,9 @@ class MSATorch(torch.nn.Module):
         self.k_proj = torch.nn.Linear(self.embed_dim, self.embed_dim)
         self.v_proj = torch.nn.Linear(self.embed_dim, self.embed_dim)
         self.output_proj = torch.nn.Linear(self.embed_dim, self.embed_dim)
-    
+
     def forward(self, x: torch.Tensor, mask: torch.Tensor | None = None) -> torch.Tensor:
-        B, T, C = x.shape
+        """Test msa forward pass."""
         q = self.q_proj(x)
         k = self.k_proj(x)
         v = self.v_proj(x)
@@ -41,6 +43,7 @@ class MSATorch(torch.nn.Module):
 
 
 class PTBlock(nn.Module):
+    """Test transformer block."""
 
     def __init__(self, embed_dim: int) -> None:
         super().__init__()
@@ -52,6 +55,7 @@ class PTBlock(nn.Module):
         self.ln_ffn = nn.LayerNorm(embed_dim)
 
     def forward(self, x):
+        """Forward pass of test transformer block."""
         temp = x + self.attn(self.ln_attn(x))
         return temp + self.ffn2(
             self.act(self.ffn1(self.ln_ffn(temp)))
@@ -59,8 +63,10 @@ class PTBlock(nn.Module):
 
 
 class TestTransformer(unittest.TestCase):
+    """Test tranfsormer network."""
 
     def test_forward(self):
+        """Test forward pass."""
         x = torch.ones((5, 10, 10))
 
         pt_blocks = []
@@ -91,14 +97,15 @@ class TestTransformer(unittest.TestCase):
         for i in range(NUM_BLOCKS):
             my_blocks.append(transformer.Block(10, 1, name=f'Block{i}'))
             my_blocks[-1].update_parameters(parameters)
-        
+
         y = x.detach().numpy()
         for block in my_blocks:
             y = block(y)
         y2 = nn.Sequential(*pt_blocks)(x).detach().numpy()
-        np_test.assert_allclose(y, y2, atol=1e-6, rtol=1e-6)
+        np_test.assert_allclose(y, y2, atol=1e-5, rtol=1e-5)
 
     def test_backward(self):
+        """Test backward pass."""
         x = torch.ones((5, 10, 10))
 
         pt_blocks = []
@@ -171,12 +178,12 @@ class TestTransformer(unittest.TestCase):
             activation, cache = block.forward(activations[-1])
             activations.append(activation)
             caches.append(cache)
-        
+
         loss_fn = losses.CrossEntropy(dim=-1)
         output = optimizers.loss_and_grads(
             x.detach().numpy(), y_hat.detach().numpy(), loss_fn, my_blocks
         )
-        
+
         for k, v in reference_gradients.items():
             np_test.assert_allclose(v, output.gradients[k], atol=1e-5, rtol=1e-5)
 

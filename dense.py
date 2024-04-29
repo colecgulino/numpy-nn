@@ -9,6 +9,7 @@ import layer
 
 
 class Dense(layer.Layer):
+    """Calculates a dense linear layer."""
 
     def __init__(
             self,
@@ -36,7 +37,7 @@ class Dense(layer.Layer):
         )
         if use_bias:
             self.set_parameter('b', np.zeros((out_dim)))
-    
+
     def parameters(self) -> dict[str, np.ndarray]:
         return self._parameters
 
@@ -90,8 +91,8 @@ class Dense(layer.Layer):
         backwards_gradient = backwards_gradient.reshape(b, self.out_dim)
 
         # Shape: [in_dim, out_dim].
-        dy_dW = x.T @ backwards_gradient
-        gradients[f'{self.name}/W'] = dy_dW
+        dy_dw = x.T @ backwards_gradient
+        gradients[f'{self.name}/W'] = dy_dw
         # Shape: [out_dim].
         dy_db = backwards_gradient.sum(axis=0)
         gradients[f'{self.name}/b'] = dy_db

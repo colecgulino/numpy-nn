@@ -19,7 +19,7 @@ class CrossEntropy(loss_base.Loss):
         self.dim = dim
         self.softmax = activations.Softmax(dim=self.dim)
 
-    def forward(self, logits: np.ndarray, y: np.ndarray) -> np.ndarray:
+    def forward(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
         """Forward pass of the cross entropy loss.
 
         Implements:
@@ -30,17 +30,26 @@ class CrossEntropy(loss_base.Loss):
             sum_i y[..., i] * log(softmax(logits)[..., i])
 
         Args:
-            logits: Logits from the model of shape: [..., dim].
+            x: Logits from the model of shape: [..., dim].
             y: True class labels of shape: [..., dim].
 
         Returns:
             Cross entropy loss of shape [...].
         """
-        probs = self.softmax(logits)
+        probs = self.softmax(x)
         return -(y * np.log(probs)).sum(axis=self.dim)
 
-    def backward_impl(self, logits: np.ndarray, y: np.ndarray) -> np.ndarray:
-        probs = self.softmax(logits)
+    def backward_impl(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        """Backward pass of the cross entropy loss.
+
+        Args:
+            x: Logits from the model of shape: [..., dim].
+            y: True class labels of shape: [..., dim].
+
+        Returns:
+            Backward gradient of shape [..., dim].
+        """
+        probs = self.softmax(x)
         return probs - y
 
 

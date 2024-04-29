@@ -2,23 +2,19 @@
 
 import unittest
 
-import numpy as np
 from numpy import testing as np_test
 import torch
 from torch import nn
 
+import activations
 import dense as _dense
 
 
-def softmax(x):
-    max_val = np.max(x, axis=-1, keepdims=True)
-    x_exp = np.exp(x - max_val)
-    return x_exp / np.sum(x_exp, axis=-1, keepdims=True)
-
-
 class TestDense(unittest.TestCase):
+    """Test dense layer."""
 
     def test_equal_to_pytorch(self):
+        """Test forward and backward pass."""
 
         # Forward pass.
         x = torch.ones((5, 10, 10))
@@ -61,7 +57,7 @@ class TestDense(unittest.TestCase):
         }
 
         gradients = {}
-        backward_grad = softmax(out_numpy) - y.detach().numpy()
+        backward_grad = activations.Softmax(-1)(out_numpy) - y.detach().numpy()
         backward_grad = dense2.backward(dense(x), {}, backward_grad, gradients)
         backward_grad = dense.backward(x, {}, backward_grad, gradients)
 

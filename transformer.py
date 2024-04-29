@@ -25,7 +25,7 @@ class FFN(layer.Layer):
         self.ffn1 = dense.Dense(embed_dim, embed_dim * 4, name=f'{name}/Dense1')
         self.ffn2 = dense.Dense(embed_dim * 4, embed_dim, name=f'{name}/Dense2')
         self.act = activations.ReLU()
-    
+
     def forward(self, x: np.ndarray) -> np.ndarray:
         """Implements a simple FFN (ffn1 -> act -> ffn2)."""
         h1 = self.ffn1(x)

@@ -10,14 +10,15 @@ import layer
 
 def get_causal_mask(x: np.ndarray) -> np.ndarray:
     """Gets causal mask for a sequence."""
-    B, T, _ = x.shape
+    batch, time, _ = x.shape
     # Shape: [T, T].
-    mask = np.triu(np.ones((T, T))) - np.eye(T)
+    mask = np.triu(np.ones((time, time))) - np.eye(time)
     # Shape: [B, T, T].
-    return mask[None].repeat(B, axis=0).astype(np.bool_)
+    return mask[None].repeat(batch, axis=0).astype(np.bool_)
 
 
 class MaskedSelfAttention(layer.Layer):
+    """Masked self attention layer for a transformer."""
 
     def __init__(self, embed_dim: int, use_bias: bool = True, name='MSA') -> None:
         super().__init__(name)
@@ -45,7 +46,6 @@ class MaskedSelfAttention(layer.Layer):
         Returns:
             Output of the attention module of shape: [B, T, C].
         """
-        B, T, C = x.shape
         # Shape: [B, T, C].
         q = self.q_proj(x)
         k = self.k_proj(x)
@@ -90,8 +90,6 @@ class MaskedSelfAttention(layer.Layer):
             Gradient to pass onto the previous layer of shape [B, T, C] and
                 calculating.
         """
-        B, T, C = x.shape
-
         # Find the gradient w.r.t. the output projection.
         # Shape: [B, T, C].
         dy_doutput = self.output_proj.backward(
@@ -118,5 +116,4 @@ class MaskedSelfAttention(layer.Layer):
         # Shape: [B,, T, C].
         k_backwards = self.k_proj.backward(x, {}, dy_dattn @ cache['q'], gradients)
         q_backwards = self.q_proj.backward(x, {}, dy_dattn @ cache['k'], gradients)
-    
         return k_backwards + q_backwards + v_backwards

@@ -62,10 +62,10 @@ class ReLU(layer.Layer):
     y(x) = { x  if x > 0
            { 0  else
     """
-    
+
     def __init__(self, name: str = 'ReLU') -> None:
         super().__init__(name)
-    
+
     def forward(self, x: np.ndarray) -> tuple[np.ndarray, layer.Cache]:
         """Implements forward pass of ReLU."""
         return (x > 0.).astype(np.float32) * x, {}
@@ -107,7 +107,7 @@ class Softmax(layer.Layer):
     def __init__(self, dim: int = 0, name: str = 'Softmax') -> None:
         super().__init__(name)
         self.dim = dim
-    
+
     def forward(self, x: np.ndarray) -> tuple[np.ndarray, layer.Cache]:
         """Implements softmax function y(x_i) = e^x_i / sum_j e^x_j"""
         max_value = np.max(x, axis=self.dim, keepdims=True)
@@ -172,7 +172,7 @@ class Tanh(layer.Layer):
 
     def __init__(self, name: str = 'Tanh') -> None:
         super().__init__(name)
-    
+
     def forward(self, x: np.ndarray) -> tuple[np.ndarray, layer.Cache]:
         """Implements forward pass of the tanh(x) function.
         

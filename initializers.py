@@ -17,5 +17,5 @@ def xavier_uniform(fan_in: int, fan_out: int, shape: list[int]) -> np.ndarray:
     Returns:
         Xavier initialized network.
     """
-    range = math.sqrt(6 / (fan_in + fan_out))
-    return np.random.uniform(-range, range, size=shape)
+    uniform_range = math.sqrt(6 / (fan_in + fan_out))
+    return np.random.uniform(-uniform_range, uniform_range, size=shape)

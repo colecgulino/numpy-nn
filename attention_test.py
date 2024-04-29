@@ -11,6 +11,7 @@ import losses
 
 
 class MSATorch(torch.nn.Module):
+    """Testing class for Self-Attention."""
 
     def __init__(self, embed_dim: int) -> None:
         super().__init__()
@@ -20,9 +21,9 @@ class MSATorch(torch.nn.Module):
         self.k_proj = torch.nn.Linear(self.embed_dim, self.embed_dim)
         self.v_proj = torch.nn.Linear(self.embed_dim, self.embed_dim)
         self.output_proj = torch.nn.Linear(self.embed_dim, self.embed_dim)
-    
+
     def forward(self, x: torch.Tensor, mask: torch.Tensor | None = None) -> torch.Tensor:
-        B, T, C = x.shape
+        """Forward pass of the test self attention."""
         q = self.q_proj(x)
         k = self.k_proj(x)
         v = self.v_proj(x)
@@ -37,8 +38,10 @@ class MSATorch(torch.nn.Module):
 
 
 class TestAttention(unittest.TestCase):
+    """Tests for attention layers."""
 
     def test_forward(self):
+        """Tests forward pass of attention layer."""
         attn0_0 = MSATorch(embed_dim=10)
         attn0_1 = MSATorch(embed_dim=10)
 
@@ -76,6 +79,7 @@ class TestAttention(unittest.TestCase):
         np_test.assert_allclose(y, y_ref.detach().numpy(), atol=1e-6, rtol=1e-6)
 
     def test_backward(self):
+        """Tests backward pass of attention layer."""
         attn0_0 = MSATorch(embed_dim=10)
         attn0_1 = MSATorch(embed_dim=10)
 
@@ -112,7 +116,7 @@ class TestAttention(unittest.TestCase):
         y = attn1_1(attn1_0(x.detach().numpy(), mask), mask)
 
         y_hat = torch.tensor([0., 1., 0., 0., 0., 0., 0., 0., 0., 0.])[None, None].repeat(5, 20, 1)
-        
+
         loss = torch.nn.CrossEntropyLoss()(
             y_ref.contiguous().view(-1, 10), y_hat.contiguous().view(-1, 10)
         )
@@ -143,7 +147,9 @@ class TestAttention(unittest.TestCase):
         gradients = {}
         backward_grad = loss_fn.backward(y, y_hat.detach().numpy())
         backward_grad = attn1_1.backward(attn1_0_out, attn1_1_cache, backward_grad, gradients)
-        backward_grad = attn1_0.backward(x.detach().numpy(), attn1_0_cache, backward_grad, gradients)
+        backward_grad = attn1_0.backward(
+            x.detach().numpy(), attn1_0_cache, backward_grad, gradients
+        )
 
         for k, v in gradients.items():
             np_test.assert_allclose(v, reference_gradients[k], rtol=1e-5, atol=1e-5)

@@ -1,13 +1,12 @@
 """Regularization layers."""
 
-"""Regularization layers."""
-
 import numpy as np
 
 import layer
 
 
 class Dropout(layer.Layer):
+    """Dropout layer."""
 
     def __init__(self, p: float, name: str = 'Dropout') -> None:
         super().__init__(name)

@@ -8,6 +8,7 @@ import numpy as np
 
 
 class Reduction(enum.Enum):
+    """Reduction type enumaration."""
     MEAN = 'mean'
     SUM = 'sum'
 
@@ -27,22 +28,21 @@ class Loss(abc.ABC):
         loss = self.forward(*args, **kwargs)
         if self.reduction == Reduction.SUM:
             return loss.sum()
-        elif self.reduction == Reduction.MEAN:
+        if self.reduction == Reduction.MEAN:
             return loss.mean()
-        else:
-            raise ValueError(f'{self.reduction} not supported.')
+        raise ValueError(f'{self.reduction} not supported.')
 
     def backward(self, *args, **kwargs):
+        """Backward outer function which also handles reduction"""
         backward_grad = self.backward_impl(*args, **kwargs)
         if self.reduction == Reduction.SUM:
             return backward_grad
-        elif self.reduction == Reduction.MEAN:
+        if self.reduction == Reduction.MEAN:
             b = functools.reduce(
                 lambda x, y: x * y, backward_grad.shape[:-1], 1
             )
             return (1. / float(b)) * backward_grad
-        else:
-            raise ValueError(f'{self.reduction} not supported.')
+        raise ValueError(f'{self.reduction} not supported.')
 
     @abc.abstractmethod
     def forward(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
@@ -55,7 +55,7 @@ class Loss(abc.ABC):
         Returns:
             Value of the loss of shape [...]. 
         """
-    
+
     @abc.abstractmethod
     def backward_impl(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
         """Backward function of the loss.

@@ -33,7 +33,7 @@ class Layer(abc.ABC):
     def __init__(self, name: str = 'Layer') -> None:
         self.name = name
         self._parameters = {}
-    
+
     def __call__(self, *args, **kwargs) -> np.ndarray:
         return self.forward(*args, **kwargs)[0]
 
@@ -50,7 +50,7 @@ class Layer(abc.ABC):
         """Returns the parameters of this network."""
         parameters = self._parameters
         # Find all the other modules that may have parameters.
-        for k, v in self.__dict__.items():
+        for v in self.__dict__.values():
             if isinstance(v, Layer):
                 parameters.update(v.parameters())
         return parameters
@@ -66,7 +66,7 @@ class Layer(abc.ABC):
     @abc.abstractmethod
     def forward(self, x: np.ndarray) -> tuple[np.ndarray, Cache]:
         """Forward propogation of the network"""
-    
+
     @abc.abstractmethod
     def backward(
         self,

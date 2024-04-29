@@ -11,6 +11,7 @@ import optimizers
 
 
 def get_network():
+    """Gets simple network for optimization."""
     layers = [
         dense.Dense(10, 10),
         activations.Sigmoid(),
@@ -22,9 +23,11 @@ def get_network():
     return layers, all_parameters
 
 
-class TestOptimizer(unittest.TestCase):
+class TestOptimizers(unittest.TestCase):
+    """Tests optimters."""
 
     def test_sgd(self):
+        """Tests sgd algorithm gets sufficient loss."""
         layers, all_parameters = get_network()
         loss_fn = losses.MSE(reduction='mean', dim=-1)
         optimizer2 = optimizers.SGD(1e-3, all_parameters, loss_fn)
@@ -36,6 +39,7 @@ class TestOptimizer(unittest.TestCase):
         self.assertLessEqual(output.loss, 1e-5)
 
     def test_adam(self):
+        """Tests adam algorithm gets sufficient loss."""
         layers, all_parameters = get_network()
         loss_fn = losses.MSE(reduction='mean', dim=-1)
         optimizer2 = optimizers.Adam(1e-3, all_parameters, loss_fn)
@@ -47,6 +51,7 @@ class TestOptimizer(unittest.TestCase):
         self.assertLessEqual(output.loss, 1e-5)
 
     def test_momentum(self):
+        """Tests sgd momentum gets sufficient loss"""
         layers, all_parameters = get_network()
         loss_fn = losses.MSE(reduction='mean', dim=-1)
         optimizer2 = optimizers.Momentum(1e-3, all_parameters, loss_fn)

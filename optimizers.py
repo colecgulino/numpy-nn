@@ -54,9 +54,9 @@ def loss_and_grads(
         layer_it = zip(layers, [{} for _ in range(len(layers))])
     # Store the activations and caches for all of the layers.
     inputs, caches = [], []
-    for layer, layer_kwargs in layer_it:
+    for current_layer, layer_kwargs in layer_it:
         inputs.append(x)
-        x, cache = layer.forward(x, **layer_kwargs)
+        x, cache = current_layer.forward(x, **layer_kwargs)
         caches.append(cache)
     # The last output is the network output.
     output = x
@@ -66,9 +66,9 @@ def loss_and_grads(
     loss = loss_fn(output, y).item()
     backwards_gradient = loss_fn.backward(output, y)
     gradients = {}
-    for input, cache, layer in zip(inputs[::-1], caches[::-1], layers[::-1]):
-        backwards_gradient = layer.backward(
-            input, cache, backwards_gradient, gradients
+    for inp, cache, current_layer in zip(inputs[::-1], caches[::-1], layers[::-1]):
+        backwards_gradient = current_layer.backward(
+            inp, cache, backwards_gradient, gradients
         )
     return BackwardPassOutput(loss=loss, gradients=gradients, output=output)
 
@@ -108,6 +108,8 @@ class Optimizer(abc.ABC):
 
 
 class SGD(Optimizer):
+    """Stochastic Gradient Descent algorithm."""
+
     def __init__(
             self,
             lr: float,
@@ -144,12 +146,14 @@ class SGD(Optimizer):
         # Update the parameters.
         for k in self.parameters:
             self.parameters[k] = self.parameters[k] - self.lr * backward_output.gradients[k]
-        for layer in layers:
-            layer.update_parameters(self.parameters)
+        for current_layer in layers:
+            current_layer.update_parameters(self.parameters)
         return backward_output
 
 
 class Momentum(Optimizer):
+    """Momentum optimization algorithm."""
+
     def __init__(
             self,
             lr: float,
@@ -190,14 +194,19 @@ class Momentum(Optimizer):
         backward_output = loss_and_grads(x, y, self.loss, layers, layers_kwargs)
         # Update the parameters.
         for k in self.parameters:
-            self.momentum[k] = self.beta * self.momentum[k] + (1 - self.beta) * backward_output.gradients[k]
+            self.momentum[k] = (
+                self.beta * self.momentum[k] +
+                (1 - self.beta) * backward_output.gradients[k]
+            )
             self.parameters[k] = self.parameters[k] - self.lr * self.momentum[k]
-        for layer in layers:
-            layer.update_parameters(self.parameters)
+        for current_layer in layers:
+            current_layer.update_parameters(self.parameters)
         return backward_output
 
 
 class Adam(Optimizer):
+    """Adam optimization algorithm."""
+
     def __init__(
             self,
             lr: float,
@@ -253,7 +262,7 @@ class Adam(Optimizer):
             v_hat = self.v[k] / (1 - self.beta2**(self.t + 1))
             update = m_hat / (np.sqrt(v_hat) + self.eps)
             self.parameters[k] = self.parameters[k] - self.lr * update
-        for layer in layers:
-            layer.update_parameters(self.parameters)
+        for current_layer in layers:
+            current_layer.update_parameters(self.parameters)
         self.t += 1
         return backward_output

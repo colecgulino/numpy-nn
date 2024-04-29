@@ -1,4 +1,5 @@
-import math
+"""Tests for LayerNorm."""
+
 import unittest
 
 from numpy import testing as np_test
@@ -12,8 +13,10 @@ import normalization
 
 
 class TestLayerNorm(unittest.TestCase):
+    """Tests layernorm layer."""
 
     def test_forward(self):
+        """Test forward pass."""
         x = torch.rand((5, 10, 100))
         lnorm_torch = torch.nn.LayerNorm(x.shape[-1])
         lnorm = normalization.LayerNorm(size=x.shape[-1])
@@ -26,6 +29,7 @@ class TestLayerNorm(unittest.TestCase):
         np_test.assert_allclose(y, y_ref.detach().numpy(), atol=1e-6, rtol=1e-6)
 
     def test_backward(self):
+        """Test backward pass."""
         x = torch.ones((5, 10, 10), requires_grad=True)
 
         dense = Dense(10, 5)
@@ -49,7 +53,7 @@ class TestLayerNorm(unittest.TestCase):
         dense2.update_parameters(parameters)
         norm.update_parameters(parameters)
         y2 = l2(torch.nn.functional.sigmoid(n(l(x))))
-        
+
         y_hat = torch.tensor([0., 1., 0., 0., 0.])[None, None].repeat(5, 10, 1)
         loss = nn.CrossEntropyLoss()(y2.contiguous().view(-1, 5), y_hat.contiguous().view(-1, 5))
         loss.backward()
