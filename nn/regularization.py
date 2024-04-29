@@ -14,6 +14,7 @@ class Dropout(layer.Layer):
         self.set_parameter('mask', None)
 
     def forward(self, x: np.ndarray) -> tuple[np.ndarray, layer.Cache]:
+        """Forward pass of random dropout."""
         mask = (np.random.random(x.shape) > self.p).astype(np.float32)
         return x * mask, {'mask': mask}
 
@@ -24,5 +25,6 @@ class Dropout(layer.Layer):
             backwards_gradient: np.ndarray,
             gradients: dict[str, np.ndarray]
     ) -> np.ndarray:
+        """Backward pass of random dropout."""
         del x, gradients
         return backwards_gradient * cache['mask']
