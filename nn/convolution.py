@@ -4,8 +4,8 @@ import itertools
 
 import numpy as np
 
-import initializers
-import layer
+from nn import initializers
+from nn import layer
 
 
 def pad_image(image: np.ndarray, padding: int, padding_value: float = 0.) -> np.ndarray:

@@ -2,7 +2,7 @@
 
 import numpy as np
 
-import layer
+from nn import layer
 
 
 class Sigmoid(layer.Layer):

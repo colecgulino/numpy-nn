@@ -4,8 +4,8 @@ import functools
 
 import numpy as np
 
-import initializers
-import layer
+from nn import initializers
+from nn import layer
 
 
 class Dense(layer.Layer):

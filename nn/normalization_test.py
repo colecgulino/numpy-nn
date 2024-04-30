@@ -6,10 +6,10 @@ from numpy import testing as np_test
 import torch
 from torch import nn
 
-from activations import Sigmoid
-from dense import Dense
-import losses
-import normalization
+from nn import losses
+from nn import normalization
+from nn.activations import Sigmoid
+from nn.dense import Dense
 
 
 class TestLayerNorm(unittest.TestCase):

@@ -7,9 +7,9 @@ from numpy import testing as np_test
 import torch
 from torch import nn
 
-import losses
-import optimizers
-import transformer
+from nn import losses
+from nn import optimizers
+from nn import transformer
 
 
 NUM_BLOCKS = 5

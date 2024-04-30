@@ -7,9 +7,9 @@ from numpy import testing as np_test
 import torch
 from torch import nn
 
-import convolution
-import losses
-import optimizers
+from nn import convolution
+from nn import losses
+from nn import optimizers
 
 
 class Conv1DTest(unittest.TestCase):

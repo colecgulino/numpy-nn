@@ -6,8 +6,8 @@ from numpy import testing as np_test
 import torch
 from torch import nn
 
-import activations
-import dense as _dense
+from nn import activations
+from nn import dense as _dense
 
 
 class TestDense(unittest.TestCase):

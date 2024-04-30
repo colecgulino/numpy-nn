@@ -3,9 +3,9 @@ import math
 
 import numpy as np
 
-import activations
-import dense
-import layer
+from nn import activations
+from nn import dense
+from nn import layer
 
 
 def get_causal_mask(x: np.ndarray) -> np.ndarray:

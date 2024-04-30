@@ -4,10 +4,10 @@ import unittest
 
 import numpy as np
 
-import activations
-import dense
-import losses
-import optimizers
+from nn import activations
+from nn import dense
+from nn import losses
+from nn import optimizers
 
 
 def get_network():

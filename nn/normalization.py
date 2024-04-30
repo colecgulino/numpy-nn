@@ -4,7 +4,7 @@ import functools
 
 import numpy as np
 
-import layer
+from nn import layer
 
 
 class LayerNorm(layer.Layer):
