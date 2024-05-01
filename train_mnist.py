@@ -4,9 +4,10 @@ import torch
 from torch.nn import functional as F
 import torchvision
 
-from nn import activations
-from nn import dense
-from nn import losses
+import nn
+# from nn import activations
+# from nn import dense
+# from nn import losses
 from nn import optimizers
 
 
@@ -30,12 +31,12 @@ def sgd_test():
     batch_size = 64
 
     layers = [
-        dense.Dense(28 * 28, 256),
-        activations.ReLU(),
-        dense.Dense(256, 10, name='Dense2')
+        nn.Dense(28 * 28, 256),
+        nn.ReLU(),
+        nn.Dense(256, 10, name='Dense2')
     ]
 
-    loss_fn = losses.CrossEntropy(reduction='mean', dim=-1)
+    loss_fn = nn.CrossEntropy(reduction='mean', dim=-1)
     all_parameters = {}
     for layer in layers:
         all_parameters.update(layer.parameters())
