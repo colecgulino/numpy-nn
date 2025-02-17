@@ -9,3 +9,5 @@ To improve on my deep learning fundamentals, I wanted to understand how backprop
 &rarr; [dense.py](docs/dense.md)
 
 [activations.py](docs/activations.md)
+
+[initializers.py](docs/initializers.md)
