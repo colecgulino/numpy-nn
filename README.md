@@ -5,5 +5,7 @@ To improve on my deep learning fundamentals, I wanted to understand how backprop
 # Neural Network Layers
 
 [layer.py](docs/layer.md)
-◊
+
 &rarr; [dense.py](docs/dense.md)
+
+[activations.py](docs/activations.md)
