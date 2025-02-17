@@ -11,3 +11,5 @@ To improve on my deep learning fundamentals, I wanted to understand how backprop
 [activations.py](docs/activations.md)
 
 [initializers.py](docs/initializers.md)
+
+[normalization.py](docs/normalization.md)
