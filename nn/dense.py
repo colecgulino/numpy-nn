@@ -91,11 +91,11 @@ class Dense(layer.Layer):
         backwards_gradient = backwards_gradient.reshape(b, self.out_dim)
 
         # Shape: [in_dim, out_dim].
-        dy_dw = x.T @ backwards_gradient
-        gradients[f'{self.name}/W'] = dy_dw
+        dL_dw = x.T @ backwards_gradient
+        gradients[f'{self.name}/W'] = dL_dw
         # Shape: [out_dim].
-        dy_db = backwards_gradient.sum(axis=0)
-        gradients[f'{self.name}/b'] = dy_db
+        dL_db = backwards_gradient.sum(axis=0)
+        gradients[f'{self.name}/b'] = dL_db
 
         # Calculate the backwards gradient.
         # Shape: [b, in_dim].
