@@ -2,11 +2,11 @@
 
 import numpy as np
 
-from nn import activations
-from nn import attention
-from nn import dense
-from nn import layer
-from nn import normalization
+import activations
+import attention
+import dense
+import layer
+import normalization
 
 
 class FFN(layer.Layer):

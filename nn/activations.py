@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from nn import layer
+import layer
 
 
 class Sigmoid(layer.Layer):
@@ -164,7 +164,11 @@ class Softmax(layer.Layer):
         scores = self.forward(x)[0]
         # Shape: [..., D, D].
         softmax_jacobian = scores[..., None] * (eye - scores[..., None])
-        return (softmax_jacobian @ backwards_gradient[..., None]).squeeze(-1)
+        # Adding a new dimension to the end of the gradient allows us
+        # to broadcast the backwards gradient so it is used for each row
+        # of the softmax calculation. Only works for dim=-1.
+        gradient = (softmax_jacobian @ backwards_gradient[..., None]).squeeze(-1)
+        return gradient.transpose([0, 2, 1])
 
 
 class Tanh(layer.Layer):

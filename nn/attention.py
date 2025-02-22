@@ -3,9 +3,9 @@ import math
 
 import numpy as np
 
-from nn import activations
-from nn import dense
-from nn import layer
+import activations
+import dense
+import layer
 
 
 def get_causal_mask(x: np.ndarray) -> np.ndarray:
@@ -108,6 +108,7 @@ class MaskedSelfAttention(layer.Layer):
         dy_dscores = backwards_gradient @ cache['v'].transpose([0, 2, 1])
         # Shape: [B, T, T].
         dy_dattn = self.softmax.backward(cache['attn'], {}, dy_dscores, {})
+        dy_dattn = dy_dattn.transpose([0, 2, 1])
         mask = cache['mask']
         if mask is not None:
             dy_dattn = dy_dattn * mask.astype(np.float32)

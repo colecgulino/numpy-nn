@@ -5,10 +5,10 @@ from torch.nn import functional as F
 import torchvision
 
 import nn
-# from nn import activations
-# from nn import dense
-# from nn import losses
-from nn import optimizers
+# import activations
+# import dense
+# import losses
+import optimizers
 
 
 def get_dataset(batch_size: int = 64):

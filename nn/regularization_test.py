@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 from numpy import testing as np_test
 
-from nn import regularization
+import regularization
 
 
 class TestDropout(unittest.TestCase):

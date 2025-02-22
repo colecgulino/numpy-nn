@@ -6,8 +6,8 @@ import typing
 
 import numpy as np
 
-from nn import layer
-from nn import loss_base
+import layer
+import loss_base
 
 Parameters = dict[str, np.ndarray]
 

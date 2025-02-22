@@ -6,8 +6,8 @@ import unittest
 from numpy import testing as np_test
 import torch
 
-from nn import attention
-from nn import losses
+import attention
+import losses
 
 
 class MSATorch(torch.nn.Module):

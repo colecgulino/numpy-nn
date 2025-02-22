@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from nn import layer
+import layer
 
 
 class Dropout(layer.Layer):

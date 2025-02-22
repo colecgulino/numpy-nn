@@ -6,8 +6,8 @@ from numpy import testing as np_test
 import torch
 from torch import nn
 
-from nn import losses
-from nn import normalization
+import losses
+import normalization
 from nn.activations import Sigmoid
 from nn.dense import Dense
 

@@ -2,8 +2,8 @@
 
 import numpy as np
 
-from nn import activations
-from nn import loss_base
+import activations
+import loss_base
 
 
 class CrossEntropy(loss_base.Loss):

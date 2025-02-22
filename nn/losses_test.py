@@ -6,10 +6,10 @@ from numpy import testing as np_test
 import torch
 from torch import nn
 
-from nn import activations
-from nn import loss_base
-from nn import losses
-from nn import dense as _dense
+import activations
+import loss_base
+import losses
+import dense as _dense
 
 
 def check_gradient(
